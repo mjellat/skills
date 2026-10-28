@@ -7,7 +7,7 @@ Agent skills, installable with the [skills CLI](https://github.com/vercel-labs/s
 Writes a ticket from a template and, if you have configured a tracker, creates it there. Supports **GitHub Issues**, **Jira** (Cloud and Data Center) and **GitLab Issues**. Without configuration it only drafts the ticket, so it is useful out of the box.
 
 ```bash
-npx skills add <owner>/skills --skill create-ticket
+npx skills add mjellat/skills --skill create-ticket
 ```
 
 Add `-g` to install it for all projects, or `-a claude-code` to pick the agent. Requires Node.js 20 or newer.
