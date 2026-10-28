@@ -1,0 +1,5 @@
+# Installs made by "npx skills add" while testing inside this repository.
+# The skills themselves live in skills/.
+.agents/skills/
+.claude/skills/
+skills-lock.json
