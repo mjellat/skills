@@ -32,7 +32,7 @@ All URLs must use `https`. Plain `http` is accepted only for `localhost`, so tok
 | `tokenEnv` | `GITHUB_TOKEN`, then `GH_TOKEN` | Variable that holds the token |
 | `apiUrl` | `https://api.github.com` | For GitHub Enterprise Server use `https://HOST/api/v3` |
 
-Token: a fine-grained personal access token with **Issues: Read and write** on the repository, or a classic token with the `repo` scope (`public_repo` for public repositories). Labels and assignees from the draft are sent as they are. GitHub silently drops both when the token has no push access to the repository, so a ticket can be created without them.
+Token: a fine-grained personal access token with **Issues: Read and write** on the repository, or a classic token with the `repo` scope (`public_repo` for public repositories). Labels and assignees from the draft are sent as they are. Labels that don't exist in the repository yet are created by GitHub (grey, without a description). GitHub silently drops both labels and assignees when the token has no push access to the repository, so a ticket can be created without them.
 
 ## GitLab
 
