@@ -1,0 +1,9 @@
+{
+  "name": "skills",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "sync": "node scripts/sync-shared.mjs",
+    "test": "node scripts/sync-shared.mjs --check && node --test tests/ skills/create-ticket/scripts/test/ skills/refine-ticket/scripts/test/"
+  }
+}

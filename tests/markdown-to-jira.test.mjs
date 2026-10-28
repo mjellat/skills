@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { markdownToJira } from '../lib/markdown-to-jira.mjs';
+import { markdownToJira } from '../shared/lib/markdown-to-jira.mjs';
 
 const convert = (...lines) => markdownToJira(lines.join('\n'));
 

@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { parseFrontmatter } from '../lib/frontmatter.mjs';
+import { parseFrontmatter } from '../shared/lib/frontmatter.mjs';
 
 test('returns the text untouched when there is no frontmatter', () => {
   const { data, body } = parseFrontmatter('# Title\n\nBody');

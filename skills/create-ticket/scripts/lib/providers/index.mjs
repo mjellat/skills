@@ -1,35 +1,13 @@
+import { CONNECTIONS, resolveSecrets, validateConfig } from '../shared/connection.mjs';
 import * as github from './github.mjs';
 import * as gitlab from './gitlab.mjs';
 import * as jira from './jira.mjs';
 
+export { resolveSecrets, validateConfig };
+
+// Request building and response parsing per tracker. Config validation,
+// credentials and auth headers are shared and live in shared/connection.mjs.
 export const PROVIDERS = { github, gitlab, jira };
-
-export function validateConfig(config) {
-  if (!config || typeof config !== 'object' || Array.isArray(config)) return ['config must be a JSON object'];
-  const names = Object.keys(PROVIDERS);
-  if (!names.includes(config.provider)) return [`provider must be one of: ${names.join(', ')}`];
-  const block = config[config.provider];
-  if (!block || typeof block !== 'object' || Array.isArray(block)) {
-    return [`missing "${config.provider}" settings block`];
-  }
-  return PROVIDERS[config.provider].validate(block);
-}
-
-// Looks up the provider's env vars. `missing` lists the names that were not set;
-// secret values only ever live in `values` and are never printed by the CLI.
-export function resolveSecrets(config, env = process.env) {
-  const wanted = PROVIDERS[config.provider].envVars(config[config.provider]);
-  const values = {};
-  const missing = [];
-  const status = {};
-  for (const [kind, names] of Object.entries(wanted)) {
-    const hit = names.find((name) => env[name]);
-    status[kind] = { names, set: Boolean(hit) };
-    if (hit) values[kind] = env[hit];
-    else missing.push(names.join(' or '));
-  }
-  return { values, missing, status };
-}
 
 // Pure and secret-free, so it is safe to print for --dry-run.
 export function buildRequest(config, ticket) {
@@ -70,7 +48,7 @@ export async function submit(config, ticket, { env = process.env, fetchImpl = gl
         'Content-Type': 'application/json',
         Accept: 'application/json',
         'User-Agent': 'create-ticket-skill',
-        ...mod.headers(values, cfg),
+        ...CONNECTIONS[config.provider].headers(values, cfg),
       },
       body: JSON.stringify(request.body),
     });

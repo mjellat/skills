@@ -2,17 +2,21 @@
 
 Agent skills, installable with the [skills CLI](https://github.com/vercel-labs/skills) (skills.sh).
 
-## create-ticket
+| Skill | What it does |
+|---|---|
+| [`create-ticket`](#create-ticket) | Writes a ticket from a template and creates it in GitHub, Jira or GitLab. |
+| [`refine-ticket`](#refine-ticket) | Refines an existing ticket against the codebase and the ADRs, and records decisions as ADRs. |
 
-Writes a ticket from a template and, if you have configured a tracker, creates it there. Supports **GitHub Issues**, **Jira** (Cloud and Data Center) and **GitLab Issues**. Without configuration it only drafts the ticket, so it is useful out of the box.
+Both need Node.js 20 or newer and read the same tracker configuration. Add `-g` to install for all projects, or `-a claude-code` to pick the agent.
 
 ```bash
 npx skills add mjellat/skills --skill create-ticket
+npx skills add mjellat/skills --skill refine-ticket
 ```
 
-Add `-g` to install it for all projects, or `-a claude-code` to pick the agent. Requires Node.js 20 or newer.
+## create-ticket
 
-### Use it
+Writes a ticket from a template and, if you have configured a tracker, creates it there. Supports **GitHub Issues**, **Jira** (Cloud and Data Center) and **GitLab Issues**. Without configuration it only drafts the ticket, so it is useful out of the box.
 
 Ask your agent in plain words:
 
@@ -22,7 +26,23 @@ Ask your agent in plain words:
 
 The agent picks a template, then searches your repository for the facts the ticket needs: affected code, existing behavior, versions, history. It asks you only about what the repository can't tell, with concrete questions built on what it found. Then it shows you the draft, with assumptions and open questions marked, and (if configured) asks before creating it.
 
-### Connect a tracker
+`bug`, `feature` and `task` templates are included. Put your own in `.tickets/templates/` (per project) or `~/.config/ticket-skill/templates/` (for everyone); a template with the same name replaces the bundled one. See [`template-format.md`](skills/create-ticket/references/template-format.md).
+
+## refine-ticket
+
+Takes an existing ticket and makes it ready to implement. Give it a number, a key or a URL:
+
+> Refine #42.
+>
+> Is ABC-123 ready for the sprint?
+
+The agent reads the ticket, goes through the codebase again, and looks up the project's **ADRs**. It then asks targeted questions in three groups: **scope** (Abgrenzung), **domain rules** (Fachlichkeit) and **technical approach** (technische Umsetzung). It skips whatever the code or an ADR already answers, and it names the ADRs that apply instead of asking about them. If the ticket conflicts with an ADR, it says so.
+
+When a decision made along the way is architecturally significant, it drafts an **ADR** in the project's own format and numbering (adr-tools, MADR or Nygard; `docs/adr/` if there is none yet). The file is written only after you agree, and it is never committed. The refined ticket links to the ADRs it follows or creates.
+
+After you confirm, it replaces title and body in the tracker and can post a comment that records what changed. Before it writes, it saves the previous version to a backup file, and it stops if somebody edited the ticket in the meantime. Labels, assignees and state are never touched.
+
+## Connect a tracker
 
 Ask the agent to "set up create-ticket", or create `.tickets/config.json` yourself:
 
@@ -33,24 +53,23 @@ Ask the agent to "set up create-ticket", or create `.tickets/config.json` yourse
 }
 ```
 
-Then export the token the tracker needs (`GITHUB_TOKEN`, `GITLAB_TOKEN`, or `JIRA_EMAIL` and `JIRA_API_TOKEN`). The config only names variables and never contains secrets. Full options for each tracker are in [`references/config.md`](skills/create-ticket/references/config.md).
+Then export the token the tracker needs (`GITHUB_TOKEN`, `GITLAB_TOKEN`, or `JIRA_EMAIL` and `JIRA_API_TOKEN`). The config only names variables and never contains secrets. Full options for each tracker are in [`config.md`](shared/docs/config.md).
 
-### Templates
+## Safety
 
-`bug`, `feature` and `task` are included. Put your own in `.tickets/templates/` (per project) or `~/.config/ticket-skill/templates/` (for everyone); a template with the same name replaces the bundled one. See [`references/template-format.md`](skills/create-ticket/references/template-format.md).
-
-### Safety
-
-- A ticket is only created after you confirm it, unless you set `"autoCreate": true`.
+- Nothing is created, changed or written without your confirmation. `create-ticket` can skip the question with `"autoCreate": true`; `refine-ticket` always asks.
 - Tokens come from environment variables, are never written to files, and are never printed. `--dry-run` shows the exact request without credentials.
-- A failed request is never retried automatically, so you don't get duplicates.
+- Failed requests that might have gone through are never retried automatically, so you don't get duplicates.
 - `http://` tracker URLs are refused, except for `localhost`.
 
-### Development
+## Development
 
 ```bash
-node --test skills/create-ticket/scripts/test/
+npm test          # sync check, then all tests
+npm run sync      # copy shared/ into the skills
 ```
+
+Skills are installed one by one, so a skill cannot import from the repository root or from a sibling. Code and docs that both skills need live once in [`shared/`](shared) and are copied into each skill by `scripts/sync-shared.mjs`. Edit the original, run `npm run sync`, and commit the copies; the tests fail if a copy is stale.
 
 The scripts use only Node built-ins. Tests run against mocked `fetch`; they never contact a tracker.
 

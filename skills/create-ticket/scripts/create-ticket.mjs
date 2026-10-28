@@ -7,7 +7,7 @@ import { parseArgs } from 'node:util';
 import { pathToFileURL } from 'node:url';
 import { findProjectDir, globalDir, listTemplates, loadConfig, loadTemplate } from './lib/config.mjs';
 import { buildRequest, resolveSecrets, submit, validateConfig } from './lib/providers/index.mjs';
-import { parseTicket } from './lib/ticket.mjs';
+import { parseTicket } from './lib/shared/ticket.mjs';
 
 const USAGE = `Usage: create-ticket.mjs <command> [options]
 

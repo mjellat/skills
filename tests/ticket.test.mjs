@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { parseTicket } from '../lib/ticket.mjs';
+import { parseTicket } from '../shared/lib/ticket.mjs';
 
 test('extracts title, body and frontmatter fields', () => {
   const ticket = parseTicket(
