@@ -19,4 +19,4 @@ labels: [enhancement]
 <!-- What this ticket deliberately does not cover. Drop this section if nothing applies. -->
 
 ## Notes
-<!-- Links, mockups, related tickets, open questions. Drop this section if empty. -->
+<!-- Code pointers and existing behavior found in the repository (files, classes, flows, versions), links, related tickets, assumptions and open questions. Drop this section if empty. -->

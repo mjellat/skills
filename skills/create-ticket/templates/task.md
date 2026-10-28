@@ -9,7 +9,7 @@ type: Task
 <!-- The outcome this task achieves and why it is worth doing. -->
 
 ## Details
-<!-- Scope, approach, affected files or systems, constraints, links. -->
+<!-- Scope, approach, constraints, links, and the files, modules or systems the repository shows are affected. -->
 
 ## Definition of done
 <!-- Checkable conditions as a task list: "- [ ] ..." -->

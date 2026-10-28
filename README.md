@@ -20,7 +20,7 @@ Ask your agent in plain words:
 >
 > File a feature request for CSV export.
 
-The agent picks a template, fills it from the conversation and the code, shows you the draft, and (if configured) asks before creating it.
+The agent picks a template, then searches your repository for the facts the ticket needs: affected code, existing behavior, versions, history. It asks you only about what the repository can't tell, with concrete questions built on what it found. Then it shows you the draft, with assumptions and open questions marked, and (if configured) asks before creating it.
 
 ### Connect a tracker
 

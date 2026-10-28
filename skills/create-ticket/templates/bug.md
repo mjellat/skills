@@ -21,5 +21,8 @@ labels: [bug]
 ## Environment
 <!-- Version or commit, OS, runtime or browser, relevant config. Only what matters. -->
 
+## Technical context
+<!-- Code pointers found in the repository: where the error is raised, recent changes there, a suspected cause only if the code makes it evident. Drop this section if nothing is evident. -->
+
 ## Impact
 <!-- Severity, how many users, and a workaround if there is one. Drop this section if unknown. -->
