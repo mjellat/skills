@@ -178,19 +178,6 @@ test('a ticket from another repository is refused before any request', async () 
   assert.equal(fetchImpl.calls.length, 0);
 });
 
-test('adrs finds the project ADRs and proposes the next file name', async () => {
-  const { io } = sandbox({
-    files: {
-      'docs/adr/0001-record-architecture-decisions.md': '# 1. Record architecture decisions\n\n## Status\n\nAccepted\n\n## Context\nc\n\n## Decision\nd\n',
-      'docs/adr/0002-use-postgres.md': '# 2. Use PostgreSQL\n\n## Status\n\nAccepted\n\n## Context\nOrders need transactions.\n\n## Decision\nd\n',
-    },
-  });
-  const result = await run(['adrs', '--match', 'transactions', '--title', 'Use an event bus'], io);
-  assert.equal(result.code, 0);
-  assert.deepEqual(result.json().adrs.map((adr) => adr.number), ['0002']);
-  assert.equal(result.json().next.path, 'docs/adr/0003-use-an-event-bus.md');
-});
-
 test('the script runs when started through a symlink, as in the default skills install', () => {
   const root = mkdtempSync(join(tmpdir(), 'refine-link-'));
   const link = join(root, 'installed-skill');

@@ -5,7 +5,6 @@
 import { existsSync, readFileSync, realpathSync } from 'node:fs';
 import { parseArgs } from 'node:util';
 import { pathToFileURL } from 'node:url';
-import { scanAdrs } from './lib/adr.mjs';
 import { findProjectDir, globalDir, loadConfig } from './lib/shared/config-file.mjs';
 import { resolveSecrets, validateConfig } from './lib/shared/connection.mjs';
 import { parseTicket } from './lib/shared/ticket.mjs';
@@ -24,9 +23,6 @@ Commands:
     --dry-run                    Print the request, send nothing
   link <parent> <child>          Link a child ticket to its parent (after splitting a ticket)
     --dry-run                    Print the request, send nothing
-  adrs                           Find the project's ADRs (JSON)
-    --match <a,b,c>              Only ADRs that mention one of these terms, best first
-    --title <text>               Also give the number and file name for a new ADR
 `;
 
 class CliError extends Error {
@@ -70,11 +66,6 @@ export async function main(argv, io = {}) {
       case 'link':
         print(await link(rest, opts, net));
         return 0;
-      case 'adrs': {
-        const { values } = parse(rest, { match: { type: 'string' }, title: { type: 'string' } });
-        print(scanAdrs({ cwd, match: values.match?.split(',') ?? [], title: values.title }));
-        return 0;
-      }
       default:
         throw new CliError(command ? `Unknown command "${command}"\n\n${USAGE}` : USAGE, 2);
     }

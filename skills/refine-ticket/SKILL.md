@@ -36,13 +36,9 @@ Read `references/refinement-guide.md` now. Read the ticket as the person who has
 
 Go through the codebase again, deeper than when the ticket was written: the code the ticket touches, similar features and how they are built, domain models and flows, tests, config, dependencies and versions. Start from the ticket's own terms, widen only when nothing turns up, and never open secret files (`.env`, keys, credential stores). Note each finding with its source (`path:line`).
 
-Then the ADRs:
+Then the ADRs. Use the **`adr` skill** (invoke it, or follow its `SKILL.md`) to find those that apply: pass it the terms from the ticket, then synonyms and the topics that usually carry decisions. Read the matching ADRs in full. Treat `accepted` ADRs as binding, mention `proposed` ones, and follow `supersededBy` instead of citing a superseded ADR. For each relevant ADR the refinement ends in one of two ways: "we follow ADR-N", or a conflict to raise in step 4.
 
-```bash
-node <skill-dir>/scripts/refine-ticket.mjs adrs --match "<terms from the ticket>"
-```
-
-Read the matching ADRs in full. Run a second query with synonyms and with the topics that usually carry decisions (persistence, messaging, auth, API style, error handling, deployment), because an ADR's title may not use the ticket's words. Treat `accepted` ADRs as binding, mention `proposed` ones, and follow `supersededBy` instead of citing a superseded ADR. For each relevant ADR the refinement ends in one of two ways: "we follow ADR-N", or a conflict to raise in step 4.
+If the `adr` skill is not installed (`npx skills add mjellat/skills --skill adr`), look for the ADRs yourself in the usual places (`docs/adr/`, `docs/decisions/`, `adr/`, a `.adr-dir` file) and tell the user the skill is missing.
 
 ### 4. Ask targeted questions
 
@@ -64,15 +60,11 @@ How to ask:
 
 ### 5. Record decisions as ADRs
 
-Decide for each decision made in steps 3 and 4 whether it needs an ADR. Read `references/adr-guide.md` for the criteria. In short: write one for decisions that are hard to reverse or that shape structure, technology, integration or data, and for any that deviate from an existing ADR. Don't write one for details that only concern this ticket, or for what an ADR already decides.
+Go through the decisions made in steps 3 and 4. For each one that is hard to reverse, shapes structure, technology, integration or data, or deviates from an existing ADR, call the **`adr` skill** to record it. Hand over what you know so it does not ask twice: the decision as a statement, the options discussed, the reason the user gave, and the ticket (id and URL). It checks whether an ADR is needed at all, follows the project's own format and numbering, shows the draft with status `proposed` and writes the file only after the user's yes. It never commits.
 
-For each ADR:
+Take the number, title, status and path (and `url`) it reports into the ticket's "Decisions and ADRs" section. Don't write ADRs for details that only concern this ticket, or for what an ADR already decides.
 
-```bash
-node <skill-dir>/scripts/refine-ticket.mjs adrs --title "<decision as a statement>"
-```
-
-This returns the ADR directory, its `format` and the `next` number and path. Follow the project's own format. If there are no ADRs yet, ask before creating a directory (`docs/adr/` is the usual choice) and use `templates/adr-madr.md`. Show the full ADR draft with status `proposed` (unless the user says it is accepted) and write the file only after their yes. Don't commit it. When an ADR replaces an older one, change the old one's status line only after a separate yes.
+If the `adr` skill is not installed, list the decision under "Decisions and ADRs" as "proposed, no ADR written" and say so in step 7.
 
 ### 6. Write the refined ticket
 

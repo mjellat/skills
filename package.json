@@ -4,6 +4,6 @@
   "type": "module",
   "scripts": {
     "sync": "node scripts/sync-shared.mjs",
-    "test": "node scripts/sync-shared.mjs --check && node --test tests/ skills/create-ticket/scripts/test/ skills/refine-ticket/scripts/test/"
+    "test": "node scripts/sync-shared.mjs --check && node --test tests/ skills/create-ticket/scripts/test/ skills/refine-ticket/scripts/test/ skills/adr/scripts/test/"
   }
 }

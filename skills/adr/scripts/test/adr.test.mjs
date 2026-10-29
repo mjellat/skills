@@ -7,7 +7,7 @@ import { dirname, join } from 'node:path';
 import { findAdrDir, scanAdrs, slugify } from '../lib/adr.mjs';
 
 function repo() {
-  const root = mkdtempSync(join(tmpdir(), 'refine-adr-'));
+  const root = mkdtempSync(join(tmpdir(), 'adr-'));
   mkdirSync(join(root, '.git'));
   return root;
 }
@@ -115,7 +115,7 @@ test('a sub-project with its own ADRs wins over the repository root', () => {
 });
 
 test('links point into the remote, without credentials', () => {
-  const root = mkdtempSync(join(tmpdir(), 'refine-adr-git-'));
+  const root = mkdtempSync(join(tmpdir(), 'adr-git-'));
   execFileSync('git', ['init', '-q', root]);
   execFileSync('git', ['-C', root, 'remote', 'add', 'origin', 'https://someone:tok3n-value@github.com/acme/app.git']);
   write(root, 'docs/adr/0001-x.md', NYGARD(1, 'X', 'Accepted'));

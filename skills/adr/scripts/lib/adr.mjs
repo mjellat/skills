@@ -1,11 +1,18 @@
-// Finds a project's Architecture Decision Records and reads what a refinement
+// Finds a project's Architecture Decision Records and reads what a caller
 // needs: which ADRs exist, their status, which fit the topic, and what number
 // and file name a new one should get. The ADR text itself is read by the agent.
 
 import { execFileSync } from 'node:child_process';
-import { existsSync, readFileSync, readdirSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { dirname, join, relative, resolve, sep } from 'node:path';
-import { isDir } from './shared/config-file.mjs';
+
+function isDir(path) {
+  try {
+    return statSync(path).isDirectory();
+  } catch {
+    return false;
+  }
+}
 
 const DEFAULT_DIR = 'docs/adr';
 const CANDIDATE_DIRS = [

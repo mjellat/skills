@@ -5,13 +5,15 @@ Agent skills, installable with the [skills CLI](https://github.com/vercel-labs/s
 | Skill | What it does |
 |---|---|
 | [`create-ticket`](#create-ticket) | Writes a ticket from a template and creates it in GitHub, Jira or GitLab. |
+| [`adr`](#adr) | Finds, checks and writes Architecture Decision Records in the project's own format. |
 | [`refine-ticket`](#refine-ticket) | Refines an existing ticket against the codebase and the ADRs, records decisions as ADRs, and splits tickets that are too big into linked stories. |
 
-Both need Node.js 20 or newer and read the same tracker configuration. Add `-g` to install for all projects, or `-a claude-code` to pick the agent.
+All need Node.js 20 or newer; the two ticket skills read the same tracker configuration. `refine-ticket` calls `adr` for ADR lookups and for recording decisions, so install them together. Add `-g` to install for all projects, or `-a claude-code` to pick the agent.
 
 ```bash
 npx skills add mjellat/skills --skill create-ticket
 npx skills add mjellat/skills --skill refine-ticket
+npx skills add mjellat/skills --skill adr
 ```
 
 ## create-ticket
@@ -38,11 +40,25 @@ Takes an existing ticket and makes it ready to implement. Give it a number, a ke
 
 The agent reads the ticket, goes through the codebase again, and looks up the project's **ADRs**. It then asks targeted questions in three groups: **scope** (Abgrenzung), **domain rules** (Fachlichkeit) and **technical approach** (technische Umsetzung). It skips whatever the code or an ADR already answers, and it names the ADRs that apply instead of asking about them. If the ticket conflicts with an ADR, it says so.
 
-When a decision made along the way is architecturally significant, it drafts an **ADR** in the project's own format and numbering (adr-tools, MADR or Nygard; `docs/adr/` if there is none yet). The file is written only after you agree, and it is never committed. The refined ticket links to the ADRs it follows or creates.
+When a decision made along the way is architecturally significant, it hands it to the [`adr`](#adr) skill, which drafts the ADR. The refined ticket links to the ADRs it follows or creates.
 
 If the ticket is **too big for one iteration**, the agent proposes how to split it before anything else: a table of vertical slices (title, goal, the acceptance criteria each takes, dependencies) with the cut it used and a recommendation. You can accept it, move criteria between stories, or keep the ticket whole. After you confirm, the stories are created (with `create-ticket`), the original ticket becomes the umbrella with a task list of its stories, and every story is linked to it: as a sub-issue on GitHub, as an issue link on GitLab and Jira.
 
 After you confirm, it replaces title and body in the tracker and can post a comment that records what changed. Before it writes, it saves the previous version to a backup file, and it stops if somebody edited the ticket in the meantime. Labels, assignees and state are never touched.
+
+## adr
+
+Finds, checks and writes **Architecture Decision Records**. You can use it on its own:
+
+> Which ADRs do we have about messaging?
+>
+> Write an ADR for using RabbitMQ for order events.
+>
+> Does moving to GraphQL conflict with an ADR?
+
+It finds the ADRs that bear on a topic with their status (following `superseded by` to the newer one), and says whether a change follows or conflicts with them. To record a decision it first checks that one is needed, then drafts the ADR in the project's own format and numbering (adr-tools, MADR or Nygard; `docs/adr/` if there is none yet). The file is written only after you agree, and it is never committed. An accepted ADR is never rewritten: a changed decision gets a new ADR that supersedes the old one.
+
+Other skills call it too; `refine-ticket` does when it needs to look up or record a decision.
 
 ## Connect a tracker
 
