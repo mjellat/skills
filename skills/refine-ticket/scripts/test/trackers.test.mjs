@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { mkdtempSync, readFileSync, readdirSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { addComment, getTicket, hashBody, planComment, planUpdate, updateTicket } from '../lib/trackers/index.mjs';
+import { addComment, getTicket, hashBody, linkTickets, planComment, planLink, planUpdate, updateTicket } from '../lib/trackers/index.mjs';
 import * as gh from '../lib/trackers/github.mjs';
 import * as gl from '../lib/trackers/gitlab.mjs';
 import * as jr from '../lib/trackers/jira.mjs';
@@ -204,4 +204,52 @@ test('requests refuse redirects', async () => {
 test('a pull request is rejected even when it is read by number', async () => {
   const fetchImpl = fakeFetch(reply(200, { ...ghIssue, pull_request: { url: 'x' } }));
   await assert.rejects(getTicket(github, '7', { env, fetchImpl }), /pull request/);
+});
+
+test('link requests per tracker', () => {
+  assert.deepEqual(gh.link('7', '8', 9001, github.github), {
+    method: 'POST', url: 'https://api.github.com/repos/acme/app/issues/7/sub_issues', body: { sub_issue_id: 9001 },
+  });
+  assert.deepEqual(gl.link('5', '6', undefined, gitlab.gitlab), {
+    method: 'POST',
+    url: 'https://gitlab.com/api/v4/projects/group%2Fsub%2Fapp/issues/5/links',
+    body: { target_project_id: 'group/sub/app', target_issue_iid: 6, link_type: 'relates_to' },
+  });
+  const link = jr.link('ABC-1', 'ABC-2', undefined, jira.jira);
+  assert.equal(link.url, 'https://acme.atlassian.net/rest/api/2/issueLink');
+  assert.deepEqual(link.body, { type: { name: 'Relates' }, outwardIssue: { key: 'ABC-1' }, inwardIssue: { key: 'ABC-2' } });
+  assert.equal(jr.link('ABC-1', 'ABC-2', undefined, { ...jira.jira, linkType: 'Split' }).body.type.name, 'Split');
+});
+
+test('planLink is offline and secret-free', () => {
+  const plan = planLink(github, '7', '#8');
+  assert.deepEqual([plan.method, plan.url], ['POST', 'https://api.github.com/repos/acme/app/issues/7/sub_issues']);
+  assert.match(plan.body.sub_issue_id, /read at run time/);
+  assert.equal(planLink(jira, 'abc-1', 'abc-2').body.inwardIssue.key, 'ABC-2');
+});
+
+test('linkTickets reads the child first, then links with its internal id', async () => {
+  const fetchImpl = fakeFetch(reply(200, { ...ghIssue, number: 8, id: 9001 }), reply(201, {}));
+  const result = await linkTickets(github, '7', '8', { env, fetchImpl });
+  assert.deepEqual(result, { ok: true, provider: 'github', parent: '#7', child: '#8' });
+  assert.deepEqual(fetchImpl.calls.map((c) => c.init.method), ['GET', 'POST']);
+  assert.equal(fetchImpl.calls[0].url, 'https://api.github.com/repos/acme/app/issues/8');
+  assert.deepEqual(JSON.parse(fetchImpl.calls[1].init.body), { sub_issue_id: 9001 });
+});
+
+test('linkTickets accepts the empty 201 answer of Jira and refuses a self link', async () => {
+  const fetchImpl = fakeFetch(reply(200, jiraIssue), reply(201));
+  const result = await linkTickets(jira, 'ABC-1', 'ABC-12', { env, fetchImpl });
+  assert.deepEqual([result.parent, result.child], ['ABC-1', 'ABC-12']);
+  await assert.rejects(linkTickets(jira, 'ABC-1', 'abc-1', { env, fetchImpl: fakeFetch() }), /itself/);
+});
+
+test('a lost answer to a link is reported as uncertain', async () => {
+  const lost = () => {
+    throw new TypeError('fetch failed', { cause: new Error('socket hang up') });
+  };
+  await assert.rejects(
+    linkTickets(github, '7', '8', { env, fetchImpl: fakeFetch(reply(200, { ...ghIssue, number: 8, id: 1 }), lost) }),
+    /may or may not have gone through/,
+  );
 });

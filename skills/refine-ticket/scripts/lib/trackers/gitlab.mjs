@@ -54,3 +54,10 @@ export const comment = (id, markdown, cfg) => ({
   url: `${issueApi(cfg, id)}/notes`,
   body: { body: markdown },
 });
+
+// "relates_to" works in every tier; GitLab has no parent link for plain issues there.
+export const link = (parentId, childId, _childInternalId, cfg) => ({
+  method: 'POST',
+  url: `${issueApi(cfg, parentId)}/links`,
+  body: { target_project_id: String(cfg.project), target_issue_iid: Number(childId), link_type: 'relates_to' },
+});

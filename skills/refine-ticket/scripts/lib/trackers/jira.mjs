@@ -56,3 +56,10 @@ export const comment = (key, markdown, cfg) => ({
   url: `${issueApi(cfg, key)}/comment`,
   body: { body: markdownToJira(markdown) },
 });
+
+// An issue link of type jira.linkType (default "Relates"), parent on the outward side.
+export const link = (parentKey, childKey, _childInternalId, cfg) => ({
+  method: 'POST',
+  url: `${CONNECTIONS.jira.base(cfg)}/rest/api/2/issueLink`,
+  body: { type: { name: cfg.linkType ?? 'Relates' }, outwardIssue: { key: parentKey }, inwardIssue: { key: childKey } },
+});

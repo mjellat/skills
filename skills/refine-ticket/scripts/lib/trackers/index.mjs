@@ -78,6 +78,30 @@ export async function updateTicket(config, ref, ticket, io = {}) {
   return { ok: true, provider: ctx.name, id: current.id, url: current.url, backup };
 }
 
+// Offline and secret-free. GitHub needs the child's internal id, which only a
+// read can tell, so the plan shows a placeholder for it.
+export function planLink(config, parentRef, childRef) {
+  const ctx = connect(config, undefined, { credentials: false });
+  const parent = ctx.tracker.parseRef(parentRef, ctx.cfg);
+  const child = ctx.tracker.parseRef(childRef, ctx.cfg);
+  return { provider: ctx.name, ...ctx.tracker.link(parent, child, '<internal id, read at run time>', ctx.cfg) };
+}
+
+// Links a child ticket to its parent. The child is read first so a wrong
+// reference fails before anything is written.
+export async function linkTickets(config, parentRef, childRef, io = {}) {
+  const ctx = connect(config, io.env);
+  const parent = ctx.tracker.parseRef(parentRef, ctx.cfg);
+  const child = ctx.tracker.parseRef(childRef, ctx.cfg);
+  if (parent === child) throw new Error('A ticket cannot be linked to itself');
+
+  const { json } = await send(ctx, ctx.tracker.get(child, ctx.cfg), io);
+  const childTicket = ctx.tracker.normalize(json, ctx.cfg);
+  await send(ctx, ctx.tracker.link(parent, child, json.id, ctx.cfg), io, { retrySafe: false });
+  const label = (id) => (ctx.name === 'jira' ? id : `#${id}`);
+  return { ok: true, provider: ctx.name, parent: label(parent), child: childTicket.id };
+}
+
 export async function addComment(config, ref, markdown, io = {}) {
   const ctx = connect(config, io.env);
   const id = ctx.tracker.parseRef(ref, ctx.cfg);

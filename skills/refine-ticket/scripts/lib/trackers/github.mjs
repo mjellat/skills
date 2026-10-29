@@ -54,3 +54,10 @@ export const comment = (id, markdown, cfg) => ({
   url: `${issueApi(cfg, id)}/comments`,
   body: { body: markdown },
 });
+
+// GitHub sub-issues: the child is added by its internal id, not its number.
+export const link = (parentId, _childId, childInternalId, cfg) => ({
+  method: 'POST',
+  url: `${issueApi(cfg, parentId)}/sub_issues`,
+  body: { sub_issue_id: childInternalId },
+});

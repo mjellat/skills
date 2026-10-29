@@ -154,6 +154,21 @@ test('comment --dry-run and real', async () => {
   assert.equal((await run(['comment', '7', '--file', empty], { ...io, env })).code, 2);
 });
 
+test('link --dry-run shows the request, link sends it, bad input is a usage error', async () => {
+  const { io } = sandbox({ config: github });
+  const env = { GITHUB_TOKEN: SECRET };
+
+  const dry = await run(['link', '7', '8', '--dry-run'], { ...io, env });
+  assert.equal(dry.code, 0);
+  assert.equal(dry.json().url, 'https://api.github.com/repos/acme/app/issues/7/sub_issues');
+
+  const fetchImpl = fakeFetch(reply(200, { ...issue, number: 8, id: 9001 }), reply(201, {}));
+  const real = await run(['link', '7', '8'], { ...io, env, fetchImpl });
+  assert.deepEqual(real.json(), { ok: true, provider: 'github', parent: '#7', child: '#8' });
+
+  assert.equal((await run(['link', '7'], { ...io, env })).code, 2);
+});
+
 test('a ticket from another repository is refused before any request', async () => {
   const { io } = sandbox({ config: github });
   const fetchImpl = fakeFetch(reply(200, issue));

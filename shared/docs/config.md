@@ -34,7 +34,7 @@ All URLs must use `https`. Plain `http` is accepted only for `localhost`, so tok
 | `tokenEnv` | `GITHUB_TOKEN`, then `GH_TOKEN` | Variable that holds the token |
 | `apiUrl` | `https://api.github.com` | For GitHub Enterprise Server use `https://HOST/api/v3` |
 
-Token: a fine-grained personal access token with **Issues: Read and write** on the repository, or a classic token with the `repo` scope (`public_repo` for public repositories). That covers everything both skills do: creating, reading and editing issues, and adding comments. Labels and assignees from the draft are sent as they are. Labels that don't exist in the repository yet are created by GitHub (grey, without a description). GitHub silently drops both labels and assignees when the token has no push access to the repository, so a ticket can be created without them.
+Token: a fine-grained personal access token with **Issues: Read and write** on the repository, or a classic token with the `repo` scope (`public_repo` for public repositories). That covers everything both skills do: creating, reading and editing issues, adding comments and linking sub-issues. Labels and assignees from the draft are sent as they are. Labels that don't exist in the repository yet are created by GitHub (grey, without a description). GitHub silently drops both labels and assignees when the token has no push access to the repository, so a ticket can be created without them.
 
 ## GitLab
 
@@ -74,6 +74,7 @@ Token: a personal or project access token with the `api` scope, for a user or bo
 | `auth` | `basic` | `basic` for Jira Cloud, `bearer` for Data Center or Server personal access tokens |
 | `emailEnv` | `JIRA_EMAIL` | Variable with your Atlassian account email (`basic` only) |
 | `tokenEnv` | `JIRA_API_TOKEN` | Variable that holds the token |
+| `linkType` | `Relates` | `refine-ticket` only. Name of the issue link type used to connect the stories of a split ticket (see `link`). Use one of your site's link types, e.g. `Split` if you have it. |
 
 Jira Cloud: create an API token at <https://id.atlassian.com/manage-profile/security/api-tokens> and export your account email as `JIRA_EMAIL`. Data Center: create a personal access token in your profile, set `"auth": "bearer"` and skip the email. The account needs the project permissions Browse projects, Create issues, Edit issues and Add comments.
 

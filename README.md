@@ -5,7 +5,7 @@ Agent skills, installable with the [skills CLI](https://github.com/vercel-labs/s
 | Skill | What it does |
 |---|---|
 | [`create-ticket`](#create-ticket) | Writes a ticket from a template and creates it in GitHub, Jira or GitLab. |
-| [`refine-ticket`](#refine-ticket) | Refines an existing ticket against the codebase and the ADRs, and records decisions as ADRs. |
+| [`refine-ticket`](#refine-ticket) | Refines an existing ticket against the codebase and the ADRs, records decisions as ADRs, and splits tickets that are too big into linked stories. |
 
 Both need Node.js 20 or newer and read the same tracker configuration. Add `-g` to install for all projects, or `-a claude-code` to pick the agent.
 
@@ -40,6 +40,8 @@ The agent reads the ticket, goes through the codebase again, and looks up the pr
 
 When a decision made along the way is architecturally significant, it drafts an **ADR** in the project's own format and numbering (adr-tools, MADR or Nygard; `docs/adr/` if there is none yet). The file is written only after you agree, and it is never committed. The refined ticket links to the ADRs it follows or creates.
 
+If the ticket is **too big for one iteration**, the agent proposes how to split it before anything else: a table of vertical slices (title, goal, the acceptance criteria each takes, dependencies) with the cut it used and a recommendation. You can accept it, move criteria between stories, or keep the ticket whole. After you confirm, the stories are created (with `create-ticket`), the original ticket becomes the umbrella with a task list of its stories, and every story is linked to it: as a sub-issue on GitHub, as an issue link on GitLab and Jira.
+
 After you confirm, it replaces title and body in the tracker and can post a comment that records what changed. Before it writes, it saves the previous version to a backup file, and it stops if somebody edited the ticket in the meantime. Labels, assignees and state are never touched.
 
 ## Connect a tracker
@@ -57,7 +59,7 @@ Then export the token the tracker needs (`GITHUB_TOKEN`, `GITLAB_TOKEN`, or `JIR
 
 ## Safety
 
-- Nothing is created, changed or written without your confirmation. `create-ticket` can skip the question with `"autoCreate": true`; `refine-ticket` always asks.
+- Nothing is created, changed, linked or written without your confirmation. `create-ticket` can skip the question with `"autoCreate": true`; `refine-ticket` always asks.
 - Tokens come from environment variables, are never written to files, and are never printed. `--dry-run` shows the exact request without credentials.
 - Failed requests that might have gone through are never retried automatically, so you don't get duplicates.
 - `http://` tracker URLs are refused, except for `localhost`.
